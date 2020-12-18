@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Server installation onto Ubuntu server</title>
+  <link rel="stylesheet" href="../css/normalize.css">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/prism3.css">
+</head>
+<body>
+<h1>Overview</h1>
+<p>This article will guide you through the installation of Minecraft Forge server onto Ubuntu server. We will use 2
+  computers - your personal and one for the server. It is assumed that the server computer has Ubuntu server installed,
+  without a graphical interface.</p>
+<h2>Process</h2>
+<p>Download Forge "installer" version file.</p>
+<p>Create an empty directory for the server files.</p>
+<p>Launch the installer and choose to install server into the previously created directory. After installation there
+  should be 3 files and 1 directory named "libraries".</p>
+<p>Now prepare the Ubuntu server. When it's ready, launch the terminal and log into the server:</p>
+<pre><code class="language-bash">
+  # ssh [server address]
+  ~ $ ssh 192.168.84.106
+</code></pre>
+<p>Create a directory for the minecraft server</p>
+<pre><code class="language-bash">~ $ mkdir server-1.16</code></pre>
+<p>Then, copy from your personal computer those 2 .jar files and "libraries" directory onto the server:</p>
+<pre><code class="language-bash">
+  # "-r" option is required for copying directories; "alexiy" is a user on the server; specify the path after ":", or
+  # leave it empty to copy to the user's home directory
+  ~ $ scp -r minecraft_server.1.16.4.jar forge-1.16.4-35.1.4.jar libraries/ alexiy@192.168.84.106:</code> </pre>
+</body>
+<p>Move those files to the created directory:</p>
+<pre><code
+  class="language-bash">~ $ mv libraries/ minecraft_server.1.16.4.jar forge-1.16.4-35.1.4.jar server-1.16/</code> </pre>
+<p>Then go to that directory and launch the forge server:</p>
+<pre><code class="language-bash">java -jar forge-1.16.4-35.1.4.jar </code> </pre>
+<p>As usual, it will create file "eula.txt" and stop. Edit the file with <em>nano</em>, and press Ctrl+X to save the
+  changes and exit. Launch the server again. If it works, stop it, then create a start script for it; should look like:
+</p>
+<pre><code class="language-bash">screen -d -m java -jar forge-1.16.4-35.1.4.jar</code></pre>
+<p>Make the script executable:</p>
+<pre><code class="language-bash">chmod +x start.sh</code> </pre>
+<p>Run it, and it should start in the background.</p>
+<p> This script launches the server process in a new detached screen session. You can read <a
+  href="https://www.gnu.org/software/screen/">here</a> how to use it.
+  For our needs, we should only know how attach and detach to screen sessions. First, to list sessions ids, type <code
+    class="language-bash">screen -list</code>.
+  To attach to a screen, type <code class="language-bash">screen -r [session-id]</code>. To detach from a screen, press
+  keyboard combo Ctrl + A + D.</p>
+<script src="../js/prism3.js"></script>
+</html>
