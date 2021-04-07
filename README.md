@@ -1,2 +1,2 @@
 # Tutorials
-Various tutorials for the players and modders.
+Various tutorials for players and modders.
