@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Networking without proxies (1.15)</title>
+  <link rel="stylesheet" href="../css/normalize.css">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/prism3.css">
+</head>
+<body>
+<H1>Intro</H1>
+There are frequently cases when you need to send a network packet to a specific side. Also you might have code which must be
+executed on one side only. In early Forge versions this was solved by proxies, but in 1.15 you can avoid using proxies,
+as I'll demonstrate below.
+<H1>Code</H1>
+I'll show it with a simple packet class which carries a bit of data.
+<pre><code class="language-java">
+  public class StartJump {
+    public int playerId;
+    public int ticks;
+
+    public StartJump(int playerId, int ticks) {
+        this.playerId = playerId;
+        this.ticks = ticks;
+    }
+
+    public StartJump() {
+    }
+  }
+</code> </pre>
+<P>Here is the main class, using new functional message registration:</P>
+<pre><code class="language-java">
+  @Mod(DragonSurvivalMod.MODID)
+  public class DragonSurvivalMod {
+    public static final String MODID = "dragonsurvival";
+    private static final String PROTOCOL_VERSION = "1";
+    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, "main"),
+            () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+
+    private static int nextPacketId = 0;
+
+    public DragonSurvivalMod() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addListener(this::setup);
+    }
+
+    private void setup(final FMLCommonSetupEvent event) {
+      CHANNEL.registerMessage(nextPacketId++, StartJump.class, (startJump, packetBuffer) -> {
+                    packetBuffer.writeInt(startJump.playerId);
+                    packetBuffer.writeByte(startJump.ticks);
+                },
+                packetBuffer -> new StartJump(packetBuffer.readInt(), packetBuffer.readByte()),
+                (startJump, contextSupplier) -> {
+                    //perform this check
+                    if (contextSupplier.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
+                        Entity entity = Minecraft.getInstance().world.getEntityByID(startJump.playerId);
+                        if (entity instanceof PlayerEntity) {
+
+                            /* actions */
+                            contextSupplier.get().setPacketHandled(true);
+                        }
+                    }
+                });
+
+    }
+  }
+</code> </pre>
+<p>You can see that in cases where we need to send packets to a specific side, we just need to check whether receiving logical side matches it. If the check fails,
+the code after it will not be executed, and there won't be crashes.</p>
+</body>
+<script src="../js/prism3.js"></script>
+</html>
