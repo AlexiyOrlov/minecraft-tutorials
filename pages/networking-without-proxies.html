@@ -66,7 +66,8 @@ I'll show it with a simple packet class which carries a bit of data.
   }
 </code> </pre>
 <p>You can see that in cases where we need to send packets to a specific side, we just need to check whether receiving logical side matches it. If the check fails,
-the code after it will not be executed, and there won't be crashes.</p>
+the code after it will not be executed, and there shouldn't be crashes. If crashes still happen, you will have to write a client proxy, which I will cover in
+separate tutorial.</p>
 </body>
 <script src="../js/prism3.js"></script>
 </html>
