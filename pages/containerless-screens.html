@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Screens without containers (1.16)</title>
+    <link rel="stylesheet" href="../css/normalize.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/prism3.css">
+  </head>
+  <body>
+      <h1>Intro</h1>
+    <p>
+        Sometimes you need a screen without a container, without slots. Usually you must register screens and their containers, and write
+        some boilerplate code. But when you don't need a screen with items, you don't even have to register it anywhere to be able to use it.
+    </p>
+    <h1>Code example</h1>
+    <p>Consider following block:</p>
+    <pre><code class="language-java">
+      public class LootBlock extends Block {
+        public LootBlock(Properties properties) {
+            super(properties);
+        }
+
+        @Override
+        public boolean hasTileEntity(BlockState state) {
+            return true;
+        }
+
+        @Nullable
+        @Override
+        public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+            return SCPTiles.lootBlockEntity.create();
+        }
+
+        @Override
+        public ActionResultType use(BlockState p_225533_1_, World world, BlockPos p_225533_3_, PlayerEntity p_225533_4_, Hand p_225533_5_, BlockRayTraceResult p_225533_6_) {
+            LootBlockEntity lootBlockEntity = (LootBlockEntity) world.getBlockEntity(p_225533_3_);
+            //open client-side GUI
+            if (world.isClientSide)
+                openScreen(lootBlockEntity);
+            return ActionResultType.SUCCESS;
+        }
+
+        //required annotation
+        @OnlyIn(Dist.CLIENT)
+        private void openScreen(LootBlockEntity lootBlockEntity) {
+            Minecraft.getInstance().setScreen(new LootBlockScreen(new StringTextComponent(""), lootBlockEntity));
+        }
+
+    }
+    </code></pre>
+    <p>And a following screen:</p>
+    <pre><code class="language-java">
+        public class LootBlockScreen extends Screen {
+            private final LootBlockEntity lootBlockEntity;
+
+            public LootBlockScreen(ITextComponent title, LootBlockEntity lootBlockEntity) {
+                super(title);
+                this.lootBlockEntity = lootBlockEntity;
+            }
+
+            @Override
+            public void init() {
+                super.init();
+                TextField textField = addButton(new TextField(centerX, 100, new StringTextComponent(lootBlockEntity.identifier), 150));
+                addButton(new BetterButton(centerX, 120, new StringTextComponent("Set identifier"), p_onPress_1_ -> {
+                    lootBlockEntity.identifier = textField.getValue();
+                    //do something
+                    minecraft.player.closeContainer();
+                }));
+            }
+        }
+    </code></pre>
+    <p>This code opens that screen on block right click. Just make sure to create a client-only method which opens the screen and
+        call it on client only.
+    </p>
+  </body>
+  <script src="../js/prism3.js"></script>
+</html>
